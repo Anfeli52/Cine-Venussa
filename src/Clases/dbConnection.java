@@ -4,13 +4,14 @@
  */
 package Clases;
 import java.sql.*;
+import java.util.ArrayList;
 import javax.swing.JOptionPane;
 /**
  *
  * @author anfel
  */
 public class dbConnection {
-    private final static String url = "jdbc:mysql://localhost:3306/cinevenussa";
+    private final static String url = "jdbc:mysql://localhost:3306/cine_venussa";
     private final static String user = "root";
     private final static String pass = "";
     
@@ -36,7 +37,7 @@ public class dbConnection {
         } else{
             try {
                 con1 = dbConnect();
-                pstm = con1.prepareStatement("SELECT correoCorporativo, password FROM usuarios WHERE correoCorporativo = ? AND password = ?");
+                pstm = con1.prepareStatement("SELECT correo_corporativo, password FROM usuarios WHERE correo_corporativo = ? AND password = ?");
                 pstm.setString(1, email);
                 pstm.setString(2, password);
                 rs = pstm.executeQuery();
@@ -49,5 +50,39 @@ public class dbConnection {
             }
         }
         return false;
+    }
+    
+    public ArrayList<Pelicula> obtenerPeliculasDelDia(String fecha) {
+        ArrayList<Pelicula> peliculas = new ArrayList<>();
+        Connection con = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+
+        try {
+            con = dbConnect(); // Asume que tienes este método para conectarte a la BD
+            String sql = "SELECT titulo, imagen FROM peliculas WHERE fecha = ?";
+            ps = con.prepareStatement(sql);
+            ps.setString(1, fecha); // ejemplo: "2025-04-14"
+            rs = ps.executeQuery();
+
+            while (rs.next()) {
+                String titulo = rs.getString("titulo");
+                String imagen = rs.getString("imagen");
+                peliculas.add(new Pelicula(titulo, imagen));
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (rs != null) rs.close();
+                if (ps != null) ps.close();
+                if (con != null) con.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+
+        return peliculas;
     }
 }
